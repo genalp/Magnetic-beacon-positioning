@@ -65,7 +65,7 @@ int main()
     string OriginalData;
     vector<vector<int>> Hdata;
     ofstream fout;
-    fout.open("C:/code/code/cpp_test/test/uart_test/test.txt");
+    fout.open("C:/code/code/Magnetic-beacon-positioning/test/uart_test/test.txt");
 
 	WZSerialPort w;
 	if (w.open("COM6"))
@@ -88,7 +88,7 @@ int main()
 		w.close();
 	}
     cout << "save successfully!" << endl;
-    system("C:\\code\\code\\cpp_test\\test\\uart_test\\test.txt");
+    system("C:\\code\\code\\Magnetic-beacon-positioning\\test\\uart_test\\test.txt");
     // system("pause");
 	return 0;
 }
