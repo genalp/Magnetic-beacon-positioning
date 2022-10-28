@@ -1,9 +1,29 @@
 #include "WZSerialPort.cpp"
+#include "../fft_test/kfft.cpp"
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <random>
+#include <ctime>
+#include <math.h>
 using namespace std;
 
+// #define PhysicalTest    // 实物测试
+#define Simulation      // 仿真测试
+
+#define PI 3.1415926535
+void Simulate(int Fs, int N, vector<double> &Hdata, vector<double> &Hidata) {
+    default_random_engine r;
+    normal_distribution<double> u(0,1); // 均值为0，标准差为1的随机数
+    r.seed(time(0));
+    for (int i = 0; i < N; i++)  //生成输入信号
+    {
+        Hdata.push_back(10 + 100*cos(2*PI*9*(i*1.0/Fs)) + u(r));
+        Hidata.push_back(0.0);
+	}
+}
+
+// 字符串转换16进制
 string binaryToHex(const string& binaryStr)
 {
     string ret;
@@ -17,8 +37,7 @@ string binaryToHex(const string& binaryStr)
 }
 
 // 数据转换函数
-void DataTransfer(string &input, vector<vector<int>> &Hdata) {
-    vector<int> OneData;
+void DataTransfer(string &input, vector<double> &Hxdata, vector<double> &Hydata, vector<double> &Hzdata) {
     int n = input.length();
     int start = 0;
     while(start <= n - 2) {
@@ -35,39 +54,46 @@ void DataTransfer(string &input, vector<vector<int>> &Hdata) {
         if(input[start] != 0x55 || input[start + 1] != 0x54) {
             break;
         }
-        int Hx = input[start + 3] << 8 | (unsigned char)input[start + 2];    // Hx=((HxH<<8)|HxL)
-        int Hy = input[start + 5] << 8 | (unsigned char)input[start + 4];    // Hy=((HyH<<8)|HyL)
-        int Hz = input[start + 7] << 8 | (unsigned char)input[start + 6];    // Hz=((HzH<<8)|HzL)
-        OneData.push_back(Hx);
-        OneData.push_back(Hy);
-        OneData.push_back(Hz);
-        Hdata.push_back(OneData);   // 记录一组数据
-        vector<int>().swap(OneData);// 清空数组
+        double Hx = input[start + 3] << 8 | (unsigned char)input[start + 2];    // Hx=((HxH<<8)|HxL)
+        double Hy = input[start + 5] << 8 | (unsigned char)input[start + 4];    // Hy=((HyH<<8)|HyL)
+        double Hz = input[start + 7] << 8 | (unsigned char)input[start + 6];    // Hz=((HzH<<8)|HzL)
+        Hxdata.push_back(Hx);
+        Hydata.push_back(Hy);
+        Hzdata.push_back(Hz);   // 记录一组数据 
         start += 22;    // 指针移到下一组数据
     }
 }
 
 // 数据存储函数
-void DataStorage(vector<vector<int>> &Hdata, ofstream &fout) {
-    if(!Hdata.size()) {
+void DataStorage(vector<double> &Hxdata, vector<double> &Hydata, vector<double> &Hzdata, ofstream &fout) {
+    if(!Hxdata.size() | !Hydata.size() |!Hzdata.size()) {
         return;
     }
-    int n = Hdata.size();
+    int n = Hxdata.size();
     for(int i = 0; i < n; i++) {
-        fout << Hdata[i][0] << ",";
-        fout << Hdata[i][1] << ",";
-        fout << Hdata[i][2] << endl;
+        fout << Hxdata[i] << ",";
+        fout << Hydata[i] << ",";
+        fout << Hzdata[i] << endl;
     }
 }
+
 
 int main()
 {
     string OriginalData;
-    vector<vector<int>> Hdata;
-    ofstream fout;
-    fout.open("C:/code/code/Magnetic-beacon-positioning/test/uart_test/test.txt");
 
-	WZSerialPort w;
+    vector<double> Hxdata;
+    vector<double> Hydata;
+    vector<double> Hzdata;
+
+    ofstream fout;
+    WZSerialPort w;
+
+// 实物测试部分
+#ifdef PhysicalTest
+#undef Simulation
+    fout.open("C:/code/code/Magnetic-beacon-positioning/test/uart_test/test.txt");
+	
 	if (w.open("COM6"))
 	{
 		// string str = "hello";
@@ -76,19 +102,34 @@ int main()
         OriginalData = w.receive();
 
         // 转换数据
-        DataTransfer(OriginalData, Hdata);
+        DataTransfer(OriginalData, Hxdata, Hydata, Hzdata);
 
         // 存储数据
-        DataStorage(Hdata, fout);
+        DataStorage(Hxdata, Hydata, Hzdata, fout);
 
-        if(Hdata.size() < 200)
-            fout << binaryToHex(OriginalData).c_str() << endl;
-        // fout << binaryToHex(w.receive()).c_str() << endl;
+        // 以16进制存储原始数据
+        // fout << binaryToHex(OriginalData).c_str() << endl;
         fout.close();
 		w.close();
 	}
     cout << "save successfully!" << endl;
     system("C:\\code\\code\\Magnetic-beacon-positioning\\test\\uart_test\\test.txt");
+#endif
+
+
+// 仿真模拟部分
+#ifdef Simulation
+    int fs = 200;
+    int n = 512;
+    vector<double> Hdata, Hidata;
+    vector<double> fr(n), fi(n);
+    Simulate(fs, n, Hdata, Hidata);
+    kfft(Hdata, Hidata, n, 9, fr, fi);
+    for (int i=0; i<100; i++)
+    { 
+        printf("%d\t%lf\n",i,Hdata[i]); //输出结果
+    }
+#endif
     // system("pause");
 	return 0;
 }
