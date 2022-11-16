@@ -8,7 +8,7 @@
 #include <math.h>
 using namespace std;
 
-// #define PhysicalTest    // 实物测试
+#define PhysicalTest    // 实物测试
 #define Simulation      // 仿真测试
 
 #define PI 3.1415926535
@@ -18,7 +18,7 @@ void Simulate(int Fs, int N, vector<double> &Hdata, vector<double> &Hidata) {
     r.seed(time(0));
     for (int i = 0; i < N; i++)  //生成输入信号
     {
-        Hdata.push_back(10 + 100*cos(2*PI*9*(i*1.0/Fs)) + u(r));
+        Hdata.push_back(10 + 100*cos(2*PI*1.95*(i*1.0/Fs)) + u(r));
         Hidata.push_back(0.0);
 	}
 }
@@ -92,6 +92,8 @@ int main()
 // 实物测试部分
 #ifdef PhysicalTest
 #undef Simulation
+    vector<double> Hidata(512, 0);
+    vector<double> fr(512), fi(512);
     fout.open("C:/code/code/Magnetic-beacon-positioning/test/uart_test/test.txt");
 	
 	if (w.open("COM6"))
@@ -103,6 +105,9 @@ int main()
 
         // 转换数据
         DataTransfer(OriginalData, Hxdata, Hydata, Hzdata);
+
+        // 对Hx傅里叶变换
+        kfft(Hxdata, Hidata, 512, 9, fr, fi);
 
         // 存储数据
         DataStorage(Hxdata, Hydata, Hzdata, fout);
