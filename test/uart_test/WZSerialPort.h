@@ -3,21 +3,7 @@
 #define _WZSERIALPORT_H
 #include <iostream>
 using namespace std;
-/*
-	作者：欧阳伟
-	日期：2017-12-14
-	类名：WZSerialPort
-	用途：串口读写
-	示例：
-		WZSerialPort w;
-		if(w.open("COM1",9600，0，8，1))
-		{
-			w.send("helloworld",10);
-			char buf[1024];
-			w.receive(buf,1024);
-		}	
-*/
- 
+
 class WZSerialPort
 {
 public:
