@@ -2,3 +2,5 @@
 
 * fft_test 傅里叶变换测试
 * uart_test 数据采集测试
+* filter_test 滤波函数测试
+* coordinate_test 坐标转换测试
