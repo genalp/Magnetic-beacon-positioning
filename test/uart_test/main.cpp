@@ -1,4 +1,4 @@
-#include "WZSerialPort.cpp"
+#include "WZSerialPort.h"
 #include "../fft_test/kfft.cpp"
 #include <iostream>
 #include <fstream>
@@ -130,7 +130,7 @@ int main()
     vector<double> fr(n), fi(n);
     Simulate(fs, n, Hdata, Hidata);
     kfft(Hdata, Hidata, n, 9, fr, fi);
-    for (int i=0; i<100; i++)
+    for (int i=0; i<10; i++)
     { 
         printf("%d\t%lf\n",i,Hdata[i]); //输出结果
     }
