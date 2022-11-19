@@ -1,4 +1,5 @@
 #include "WZSerialPort.h"
+#include "../filter_test/filter.cpp"
 #include "../fft_test/kfft.cpp"
 #include <iostream>
 #include <fstream>
@@ -94,7 +95,6 @@ int main()
 #undef Simulation
     vector<double> Hidata(512, 0);
     vector<double> fr(512), fi(512);
-    fout.open("C:/code/code/Magnetic-beacon-positioning/test/uart_test/test.txt");
 	
 	if (w.open("COM6"))
 	{
@@ -103,14 +103,27 @@ int main()
         // 取数据
         OriginalData = w.receive();
 
-        // 转换数据
+        // 转换数据并存储
         DataTransfer(OriginalData, Hxdata, Hydata, Hzdata);
-
-        // 对Hx傅里叶变换
-        kfft(Hxdata, Hidata, 512, 9, fr, fi);
-
-        // 存储数据
+        fout.open("C:/code/code/Magnetic-beacon-positioning/test/uart_test/Hdata.txt");
         DataStorage(Hxdata, Hydata, Hzdata, fout);
+        fout.close();
+
+        // 对磁场数据滤波并保存
+        LowPassFilter(Hxdata, 5, 200);
+        LowPassFilter(Hydata, 5, 200);
+        LowPassFilter(Hzdata, 5, 200);
+        fout.open("C:/code/code/Magnetic-beacon-positioning/test/uart_test/Filterdata.txt");
+        DataStorage(Hxdata, Hydata, Hzdata, fout);
+        fout.close();
+
+        // 对磁场傅里叶变换并存储
+        kfft(Hxdata, Hidata, 512, 9, fr, fi);
+        kfft(Hydata, Hidata, 512, 9, fr, fi);
+        kfft(Hzdata, Hidata, 512, 9, fr, fi);
+        fout.open("C:/code/code/Magnetic-beacon-positioning/test/uart_test/FFTdata.txt");
+        DataStorage(Hxdata, Hydata, Hzdata, fout);
+        fout.close();
 
         // 以16进制存储原始数据
         // fout << binaryToHex(OriginalData).c_str() << endl;
@@ -118,7 +131,8 @@ int main()
 		w.close();
 	}
     cout << "save successfully!" << endl;
-    system("C:\\code\\code\\Magnetic-beacon-positioning\\test\\uart_test\\test.txt");
+    // system("C:\\code\\code\\Magnetic-beacon-positioning\\test\\uart_test\\Hdata.txt");
+    // system("C:\\code\\code\\Magnetic-beacon-positioning\\test\\uart_test\\FFTdata.txt");
 #endif
 
 
