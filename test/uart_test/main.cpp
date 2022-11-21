@@ -1,4 +1,5 @@
 #include "WZSerialPort.h"
+#include "../filter_test/IIR.h"
 #include "../filter_test/filter.cpp"
 #include "../fft_test/kfft.cpp"
 #include <iostream>
@@ -89,6 +90,7 @@ int main()
 
     ofstream fout;
     WZSerialPort w;
+    IIR_Filter IIR;
 
 // 实物测试部分
 #ifdef PhysicalTest
@@ -110,9 +112,12 @@ int main()
         fout.close();
 
         // 对磁场数据滤波并保存
-        LowPassFilter(Hxdata, 5, 200);
-        LowPassFilter(Hydata, 5, 200);
-        LowPassFilter(Hzdata, 5, 200);
+        IIR.Filter(Hxdata);
+        IIR.Filter(Hydata);
+        IIR.Filter(Hzdata);
+        // LowPassFilter(Hxdata, 5, 200);
+        // LowPassFilter(Hydata, 5, 200);
+        // LowPassFilter(Hzdata, 5, 200);
         fout.open("C:/code/code/Magnetic-beacon-positioning/test/uart_test/Filterdata.txt");
         DataStorage(Hxdata, Hydata, Hzdata, fout);
         fout.close();
