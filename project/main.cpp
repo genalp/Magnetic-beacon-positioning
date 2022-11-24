@@ -1,6 +1,8 @@
 #include "WZSerialPort.h"
 #include "IIR.h"
 #include "kfft.h"
+#include "matrix.h"
+#include "transform.h"
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -79,6 +81,23 @@ void DataStorage(vector<double> &Hxdata, vector<double> &Hydata, vector<double> 
     }
 }
 
+// 获取姿态角
+void GetAngle(string &input, double &x_roll, double &y_pitch, double &z_yaw) {
+    int n = input.length();
+    int start = 0;
+    while(start <= n - 2) {
+        // 寻找起始位置
+        if(input[start] == 0x55 && input[start + 1] == 0x53) {
+            break;
+        }
+        start++;
+    }
+
+    x_roll   = (input[start + 3] << 8 | (unsigned char)input[start + 2]) / 32768.0 * 180;    // Roll=((RollH<<8)|RollL)/32768*180(°)
+    y_pitch  = (input[start + 5] << 8 | (unsigned char)input[start + 4]) / 32768.0 * 180;    // Pitch=((PitchH<<8)|PitchL)/32768*180(°)
+    z_yaw    = (input[start + 7] << 8 | (unsigned char)input[start + 6]) / 32768.0 * 180;    // Yaw=((YawH<<8)|YawL)/32768*180(°)
+}
+
 int main()
 {
     string OriginalData;
@@ -86,6 +105,11 @@ int main()
     vector<double> Hxdata(512);
     vector<double> Hydata(512);
     vector<double> Hzdata(512);
+    double x_roll;
+    double y_pitch;
+    double z_yaw;
+    Matrix HM;
+    vector<vector<double>> E = HM.creatmatrix(3,1);
 
     ofstream fout;
     WZSerialPort w;
@@ -104,31 +128,39 @@ int main()
         // 取数据
         OriginalData = w.receive();
 
+        // 获取角度
+        GetAngle(OriginalData, x_roll, y_pitch, z_yaw);
+        cout << x_roll << ", " << y_pitch << ", " << z_yaw << endl;
+
         // 转换数据并存储
         DataTransfer(OriginalData, Hxdata, Hydata, Hzdata);
         fout.open("./Hdata.txt");
         DataStorage(Hxdata, Hydata, Hzdata, fout);
         fout.close();
 
-        // 对磁场数据滤波并保存
-        IIR.Filter(Hxdata);
-        IIR.Filter(Hydata);
-        IIR.Filter(Hzdata);
-        fout.open("./Filterdata.txt");
-        DataStorage(Hxdata, Hydata, Hzdata, fout);
-        fout.close();
+        // 坐标转换测试
+        E[0][0] = Hxdata[0];
+        E[1][0] = Hydata[0];
+        E[2][0] = Hzdata[0];
+        tranform(E, x_roll, y_pitch, z_yaw);
+        HM.show_matrix(E);
 
-        // 对磁场傅里叶变换并存储
-        kfft(Hxdata, Hidata, 512, 9, fr, fi);
-        kfft(Hydata, Hidata, 512, 9, fr, fi);
-        kfft(Hzdata, Hidata, 512, 9, fr, fi);
-        fout.open("./FFTdata.txt");
-        DataStorage(Hxdata, Hydata, Hzdata, fout);
-        fout.close();
+        // // 对磁场数据滤波并保存
+        // IIR.Filter(Hxdata);
+        // IIR.Filter(Hydata);
+        // IIR.Filter(Hzdata);
+        // fout.open("./Filterdata.txt");
+        // DataStorage(Hxdata, Hydata, Hzdata, fout);
+        // fout.close();
 
-        // 以16进制存储原始数据
-        // fout << binaryToHex(OriginalData).c_str() << endl;
-        fout.close();
+        // // 对磁场傅里叶变换并存储
+        // kfft(Hxdata, Hidata, 512, 9, fr, fi);
+        // kfft(Hydata, Hidata, 512, 9, fr, fi);
+        // kfft(Hzdata, Hidata, 512, 9, fr, fi);
+        // fout.open("./FFTdata.txt");
+        // DataStorage(Hxdata, Hydata, Hzdata, fout);
+        // fout.close();
+
 		w.close();
 	}
     cout << "save successfully!" << endl;
