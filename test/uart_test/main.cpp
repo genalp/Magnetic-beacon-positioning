@@ -8,6 +8,7 @@
 #include <random>
 #include <ctime>
 #include <math.h>
+#include <windows.h>
 using namespace std;
 
 #define PhysicalTest    // 实物测试
@@ -97,13 +98,48 @@ void GetAngle(string &input, double &x_roll, double &y_pitch, double &z_yaw) {
 }
 
 
+void getH(string &input, vector<double> &Hxdata, vector<double> &Hydata, vector<double> &Hzdata) {
+    // 数据标签
+    vector<string> Hlabels = {"Magx:", "Magy:", "Magz:"};
+    // 存储一组数据
+    vector<double> Hdatas(3);
+    int len = input.length();
+    // 初始化数据指针
+    int n = input.find(Hlabels[0]);
+    for(int j = 0; j < Hxdata.size(); j++) {
+        for(int i = 0; i < Hlabels.size(); i++) {
+            double data = 0;
+            double sign = 1;
+            // 找到标签位置
+            n = input.find(Hlabels[i], n);
+            // 指针向后移动到数据位
+            n += Hlabels[i].length();
+            while(input[n] != ',' && n < len) {
+                // 处理负数
+                if(input[n] == '-') {
+                    sign = -1;
+                }
+                else {
+                    data = data * 10.0 + (input[n] - '0');
+                }
+                n++;
+            }
+            Hdatas[i] = sign * data;
+        }
+        // 储存一组数据
+        Hxdata[j] = Hdatas[0];
+        Hydata[j] = Hdatas[1];
+        Hzdata[j] = Hdatas[2];
+    }
+}
+
 int main()
 {
     string OriginalData;
 
-    vector<double> Hxdata;
-    vector<double> Hydata;
-    vector<double> Hzdata;
+    vector<double> Hxdata(512);
+    vector<double> Hydata(512);
+    vector<double> Hzdata(512);
     double x_roll;
     double y_pitch;
     double z_yaw;
@@ -118,21 +154,28 @@ int main()
     vector<double> Hidata(512, 0);
     vector<double> fr(512), fi(512);
 	
-	if (w.open("COM6"))
+	if (w.open("COM7"))
 	{
-		// string str = "hello";
-		// w.send(str);
+        string cmd_unlock = {(char)0xff, (char)0xaa, 0x69, (char)0x88, (char)0xb5};
+		string cmd_endonce = {(char)0xff, (char)0xaa, 0x03, (char)0x0c, (char)0x00};
+        // cout << "SEND UNLOCK!" << endl;
+        // w.send(cmd_unlock);
+        // Sleep(50);
+        // cout << "SEND GETONCE!" << endl;
+		// w.send(cmd_endonce);
         // 取数据
         OriginalData = w.receive();
+        // cout << OriginalData << endl;
+        getH(OriginalData, Hxdata, Hydata, Hzdata);
 
-        GetAngle(OriginalData, x_roll, y_pitch, z_yaw);
-        cout << x_roll << ", " << y_pitch << ", " << z_yaw << endl;
+        // GetAngle(OriginalData, x_roll, y_pitch, z_yaw);
+        // cout << x_roll << ", " << y_pitch << ", " << z_yaw << endl;
 
         // // 转换数据并存储
         // DataTransfer(OriginalData, Hxdata, Hydata, Hzdata);
-        // fout.open("C:/code/code/Magnetic-beacon-positioning/test/uart_test/Hdata.txt");
-        // DataStorage(Hxdata, Hydata, Hzdata, fout);
-        // fout.close();
+        fout.open("C:/code/code/Magnetic-beacon-positioning/test/uart_test/Hdata.txt");
+        DataStorage(Hxdata, Hydata, Hzdata, fout);
+        fout.close();
 
         // // 对磁场数据滤波并保存
         // IIR.Filter(Hxdata);

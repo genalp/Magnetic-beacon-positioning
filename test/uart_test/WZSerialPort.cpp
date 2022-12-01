@@ -191,7 +191,7 @@ int WZSerialPort::send(string dat)
 	}
 }
 
-#define StrLen 11286// 33// 11286// 4422
+#define StrLen 23085//11286// 33// 11286// 4422
 string WZSerialPort::receive()
 {
 	HANDLE hCom = *(HANDLE*)pHandle;
