@@ -88,12 +88,12 @@ int IIR_Filter::Direct( double Cotoff,
                          int N,
                          double *az,double *bz)
 {
-     printf("Wc =  %lf  [rad/sec] \n" ,Cotoff);
-     printf("Ws =  %lf  [rad/sec] \n" ,Stopband);
-     printf("As  =  %lf  [dB] \n" ,Stopband_attenuation);
-     printf("--------------------------------------------------------\n" );
-     printf("N:  %d  \n" ,N);
-     printf("--------------------------------------------------------\n" );
+     // printf("Wc =  %lf  [rad/sec] \n" ,Cotoff);
+     // printf("Ws =  %lf  [rad/sec] \n" ,Stopband);
+     // printf("As  =  %lf  [dB] \n" ,Stopband_attenuation);
+     // printf("--------------------------------------------------------\n" );
+     // printf("N:  %d  \n" ,N);
+     // printf("--------------------------------------------------------\n" );
 
      COMPLEX poles[N],poles_1,poles_2;
      double dk = 0;
@@ -183,7 +183,7 @@ int IIR_Filter::Direct( double Cotoff,
      double K_z = 0.0;
 	for(count = 0;count <= N;count++)   {K_z += *(az+count);}
 	K_z = (K_z/pow ((double)2,N));
-	printf("K =  %lf \n" , K_z);
+	// printf("K =  %lf \n" , K_z);
  
 	for(count = 0;count <= N;count++)
 	{
@@ -243,19 +243,19 @@ int IIR_Filter::Direct( double Cotoff,
            *(bz + N - count) = *(bz + N - count) * K_z;
 	}
       	//------------------------display---------------------------------//
-      printf("bz =  [" );   
-      for(count= 0;count <= N ;count++)
-      {
-           printf("%lf ", *(bz+count));
-      }
-      printf(" ] \n" );
-      printf("az =  [" );   
-      for(count= 0;count <= N ;count++)
-      {
-           printf("%lf ", *(az+count));
-      }
-      printf(" ] \n" );
-      printf("--------------------------------------------------------\n" );
+     //  printf("bz =  [" );   
+     //  for(count= 0;count <= N ;count++)
+     //  {
+     //       printf("%lf ", *(bz+count));
+     //  }
+     //  printf(" ] \n" );
+     //  printf("az =  [" );   
+     //  for(count= 0;count <= N ;count++)
+     //  {
+     //       printf("%lf ", *(az+count));
+     //  }
+     //  printf(" ] \n" );
+     //  printf("--------------------------------------------------------\n" );
 	 
       return (int)1;
 }

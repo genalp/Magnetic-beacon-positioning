@@ -138,28 +138,31 @@ int main()
         DataStorage(Hxdata, Hydata, Hzdata, fout);
         fout.close();
 
+        // 对磁场数据滤波并保存
+        IIR.Filter(Hxdata);
+        IIR.Filter(Hydata);
+        IIR.Filter(Hzdata);
+        fout.open("./Filterdata.txt");
+        DataStorage(Hxdata, Hydata, Hzdata, fout);
+        fout.close();
+
+        // 对磁场傅里叶变换并存储
+        kfft(Hxdata, Hidata, 512, 9, fr, fi);
+        kfft(Hydata, Hidata, 512, 9, fr, fi);
+        kfft(Hzdata, Hidata, 512, 9, fr, fi);
+        fout.open("./FFTdata.txt");
+        DataStorage(Hxdata, Hydata, Hzdata, fout);
+        fout.close();
+
+        cout << Hxdata[5] << ", " << Hydata[5] << ", " << Hzdata[5] << endl;
+
         // 坐标转换测试
-        E[0][0] = Hxdata[0];
-        E[1][0] = Hydata[0];
-        E[2][0] = Hzdata[0];
+        E[0][0] = Hxdata[5]/256;
+        E[1][0] = Hydata[5]/256;
+        E[2][0] = Hzdata[5]/256;
         tranform(E, x_roll, y_pitch, z_yaw);
-        HM.show_matrix(E);
-
-        // // 对磁场数据滤波并保存
-        // IIR.Filter(Hxdata);
-        // IIR.Filter(Hydata);
-        // IIR.Filter(Hzdata);
-        // fout.open("./Filterdata.txt");
-        // DataStorage(Hxdata, Hydata, Hzdata, fout);
-        // fout.close();
-
-        // // 对磁场傅里叶变换并存储
-        // kfft(Hxdata, Hidata, 512, 9, fr, fi);
-        // kfft(Hydata, Hidata, 512, 9, fr, fi);
-        // kfft(Hzdata, Hidata, 512, 9, fr, fi);
-        // fout.open("./FFTdata.txt");
-        // DataStorage(Hxdata, Hydata, Hzdata, fout);
-        // fout.close();
+        // HM.show_matrix(E);
+        cout << E[0][0]*E[0][0] + E[1][0]*E[1][0] + E[2][0]*E[2][0] << endl;
 
 		w.close();
 	}
