@@ -1,0 +1,58 @@
+Protel Design System Design Rule Check
+PCB File : C:\code\code\Magnetic-beacon-positioning\PCB\UART_BUS\UART_BUS.PcbDoc
+Date     : 2022/11/30
+Time     : 20:47:17
+
+Processing Rule : Clearance Constraint (Gap=10mil) (All),(All)
+Rule Violations :0
+
+Processing Rule : Short-Circuit Constraint (Allowed=No) (All),(All)
+Rule Violations :0
+
+Processing Rule : Un-Routed Net Constraint ( (All) )
+Rule Violations :0
+
+Processing Rule : Modified Polygon (Allow modified: No), (Allow shelved: No)
+Rule Violations :0
+
+Processing Rule : Width Constraint (Min=1mil) (Max=100mil) (Preferred=30mil) (All)
+Rule Violations :0
+
+Processing Rule : Power Plane Connect Rule(Relief Connect )(Expansion=20mil) (Conductor Width=10mil) (Air Gap=10mil) (Entries=4) (All)
+Rule Violations :0
+
+Processing Rule : Hole Size Constraint (Min=1mil) (Max=100mil) (All)
+Rule Violations :0
+
+Processing Rule : Hole To Hole Clearance (Gap=10mil) (All),(All)
+Rule Violations :0
+
+Processing Rule : Minimum Solder Mask Sliver (Gap=10mil) (All),(All)
+Rule Violations :0
+
+Processing Rule : Silk To Solder Mask (Clearance=10mil) (IsPad),(All)
+   Violation between Silk To Solder Mask Clearance Constraint: (9.371mil < 10mil) Between Pad -2(4724.409mil,3837.008mil) on Multi-Layer And Track (4732.401mil,3845mil)(4777.401mil,3890mil) on Top Overlay [Top Overlay] to [Top Solder] clearance [9.371mil]
+   Violation between Silk To Solder Mask Clearance Constraint: (9.371mil < 10mil) Between Pad -3(4724.409mil,3737.008mil) on Multi-Layer And Track (4732.401mil,3745mil)(4777.401mil,3790mil) on Top Overlay [Top Overlay] to [Top Solder] clearance [9.371mil]
+   Violation between Silk To Solder Mask Clearance Constraint: (9.371mil < 10mil) Between Pad -4(4724.409mil,3637.008mil) on Multi-Layer And Track (4732.401mil,3645mil)(4777.401mil,3690mil) on Top Overlay [Top Overlay] to [Top Solder] clearance [9.371mil]
+   Violation between Silk To Solder Mask Clearance Constraint: (9.371mil < 10mil) Between Pad -5(4724.409mil,3537.008mil) on Multi-Layer And Track (4732.401mil,3545mil)(4777.401mil,3590mil) on Top Overlay [Top Overlay] to [Top Solder] clearance [9.371mil]
+   Violation between Silk To Solder Mask Clearance Constraint: (9.079mil < 10mil) Between Pad D1-1(4043.001mil,3394mil) on Bottom Layer And Track (4008.001mil,3434mil)(4043.001mil,3499mil) on Bottom Overlay [Bottom Overlay] to [Bottom Solder] clearance [9.079mil]
+   Violation between Silk To Solder Mask Clearance Constraint: (5.473mil < 10mil) Between Pad D1-1(4043.001mil,3394mil) on Bottom Layer And Track (4008.001mil,3434mil)(4078.001mil,3434mil) on Bottom Overlay [Bottom Overlay] to [Bottom Solder] clearance [5.473mil]
+   Violation between Silk To Solder Mask Clearance Constraint: (9.079mil < 10mil) Between Pad D1-1(4043.001mil,3394mil) on Bottom Layer And Track (4043.001mil,3499mil)(4078.001mil,3434mil) on Bottom Overlay [Bottom Overlay] to [Bottom Solder] clearance [9.079mil]
+   Violation between Silk To Solder Mask Clearance Constraint: (9.079mil < 10mil) Between Pad D2-1(4988.001mil,3394mil) on Bottom Layer And Track (4953.001mil,3434mil)(4988.001mil,3499mil) on Bottom Overlay [Bottom Overlay] to [Bottom Solder] clearance [9.079mil]
+   Violation between Silk To Solder Mask Clearance Constraint: (5.473mil < 10mil) Between Pad D2-1(4988.001mil,3394mil) on Bottom Layer And Track (4953.001mil,3434mil)(5023.001mil,3434mil) on Bottom Overlay [Bottom Overlay] to [Bottom Solder] clearance [5.473mil]
+   Violation between Silk To Solder Mask Clearance Constraint: (9.079mil < 10mil) Between Pad D2-1(4988.001mil,3394mil) on Bottom Layer And Track (4988.001mil,3499mil)(5023.001mil,3434mil) on Bottom Overlay [Bottom Overlay] to [Bottom Solder] clearance [9.079mil]
+Rule Violations :10
+
+Processing Rule : Silk to Silk (Clearance=10mil) (All),(All)
+Rule Violations :0
+
+Processing Rule : Net Antennae (Tolerance=0mil) (All)
+Rule Violations :0
+
+Processing Rule : Height Constraint (Min=0mil) (Max=1000mil) (Prefered=500mil) (All)
+Rule Violations :0
+
+
+Violations Detected : 10
+Waived Violations : 0
+Time Elapsed        : 00:00:01

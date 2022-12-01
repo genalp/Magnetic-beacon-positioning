@@ -1,0 +1,22 @@
+Added Component: Designator=JY901_1(HDR-1.27-1X6)
+Add component (AddParameter): Name = "Manufacture"; Value = "Device Name"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Sch Name"; Value = "Header 6"; VariantName = "[No Variations]"
+Added Component: Designator=JY901_2(HDR-1.27-1X6)
+Add component (AddParameter): Name = "Manufacture"; Value = "Device Name"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Sch Name"; Value = "Header 6"; VariantName = "[No Variations]"
+Added Component: Designator=JYRM3100_1(HDR-1.27-1X6)
+Add component (AddParameter): Name = "Manufacture"; Value = "Device Name"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Sch Name"; Value = "Header 6"; VariantName = "[No Variations]"
+Added Component: Designator=JYRM3100_2(HDR-1.27-1X6)
+Add component (AddParameter): Name = "Manufacture"; Value = "Device Name"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Sch Name"; Value = "Header 6"; VariantName = "[No Variations]"
+Added Component: Designator=MASTER1(HDR-1.27-1X6)
+Add component (AddParameter): Name = "Manufacture"; Value = "Device Name"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Sch Name"; Value = "Header 6"; VariantName = "[No Variations]"
+Added Component: Designator=MASTER2(HDR-1.27-1X6)
+Add component (AddParameter): Name = "Manufacture"; Value = "Device Name"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Sch Name"; Value = "Header 6"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=VCC Pin=MASTER1-2
+Added Net: Name=VCC
+Added Class: Name=UART_BUS
+Added Room: Name=UART_BUS
