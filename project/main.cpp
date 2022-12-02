@@ -15,6 +15,8 @@ using namespace std;
 #define Simulation      // 仿真测试
 
 #define PI 3.1415926535
+#define Point_num 512
+
 void Simulate(int Fs, int N, vector<double> &Hdata, vector<double> &Hidata) {
     default_random_engine r;
     normal_distribution<double> u(0,1); // 均值为0，标准差为1的随机数
@@ -98,13 +100,49 @@ void GetAngle(string &input, double &x_roll, double &y_pitch, double &z_yaw) {
     z_yaw    = (input[start + 7] << 8 | (unsigned char)input[start + 6]) / 32768.0 * 180;    // Yaw=((YawH<<8)|YawL)/32768*180(°)
 }
 
+
+void getH(string &input, vector<double> &Hxdata, vector<double> &Hydata, vector<double> &Hzdata) {
+    // 数据标签
+    vector<string> Hlabels = {"Magx:", "Magy:", "Magz:"};
+    // 存储一组数据
+    vector<double> Hdatas(3);
+    int len = input.length();
+    // 初始化数据指针
+    int n = input.find(Hlabels[0]);
+    for(int j = 0; j < Hxdata.size(); j++) {
+        for(int i = 0; i < Hlabels.size(); i++) {
+            double data = 0;
+            double sign = 1;
+            // 找到标签位置
+            n = input.find(Hlabels[i], n);
+            // 指针向后移动到数据位
+            n += Hlabels[i].length();
+            while(input[n] != ',' && n < len) {
+                // 处理负数
+                if(input[n] == '-') {
+                    sign = -1;
+                }
+                else {
+                    data = data * 10.0 + (input[n] - '0');
+                }
+                n++;
+            }
+            Hdatas[i] = sign * data;
+        }
+        // 储存一组数据
+        Hxdata[j] = Hdatas[0];
+        Hydata[j] = Hdatas[1];
+        Hzdata[j] = Hdatas[2];
+    }
+}
+
 int main()
 {
     string OriginalData;
 
-    vector<double> Hxdata(512);
-    vector<double> Hydata(512);
-    vector<double> Hzdata(512);
+    vector<double> Hxdata(Point_num);
+    vector<double> Hydata(Point_num);
+    vector<double> Hzdata(Point_num);
     double x_roll;
     double y_pitch;
     double z_yaw;
@@ -118,10 +156,10 @@ int main()
 // 实物测试部分
 #ifdef PhysicalTest
 #undef Simulation
-    vector<double> Hidata(512, 0);
-    vector<double> fr(512), fi(512);
+    vector<double> Hidata(Point_num, 0);
+    vector<double> fr(Point_num), fi(Point_num);
 	
-	if (w.open("COM6"))
+	if (w.open("COM7"))
 	{
 		// string str = "hello";
 		// w.send(str);
@@ -129,11 +167,12 @@ int main()
         OriginalData = w.receive();
 
         // 获取角度
-        GetAngle(OriginalData, x_roll, y_pitch, z_yaw);
-        cout << x_roll << ", " << y_pitch << ", " << z_yaw << endl;
+        // GetAngle(OriginalData, x_roll, y_pitch, z_yaw);
+        // cout << x_roll << ", " << y_pitch << ", " << z_yaw << endl;
 
         // 转换数据并存储
-        DataTransfer(OriginalData, Hxdata, Hydata, Hzdata);
+        // DataTransfer(OriginalData, Hxdata, Hydata, Hzdata);
+        getH(OriginalData, Hxdata, Hydata, Hzdata);
         fout.open("./Hdata.txt");
         DataStorage(Hxdata, Hydata, Hzdata, fout);
         fout.close();
@@ -147,22 +186,23 @@ int main()
         fout.close();
 
         // 对磁场傅里叶变换并存储
-        kfft(Hxdata, Hidata, 512, 9, fr, fi);
-        kfft(Hydata, Hidata, 512, 9, fr, fi);
-        kfft(Hzdata, Hidata, 512, 9, fr, fi);
+        int ftt_n = (int)log2(Point_num);
+        kfft(Hxdata, Hidata, Point_num, ftt_n, fr, fi);
+        kfft(Hydata, Hidata, Point_num, ftt_n, fr, fi);
+        kfft(Hzdata, Hidata, Point_num, ftt_n, fr, fi);
         fout.open("./FFTdata.txt");
         DataStorage(Hxdata, Hydata, Hzdata, fout);
         fout.close();
 
-        cout << Hxdata[5] << ", " << Hydata[5] << ", " << Hzdata[5] << endl;
+        cout << Hxdata[23] << ", " << Hydata[23] << ", " << Hzdata[23] << endl;
 
-        // 坐标转换测试
-        E[0][0] = Hxdata[5]/256;
-        E[1][0] = Hydata[5]/256;
-        E[2][0] = Hzdata[5]/256;
-        tranform(E, x_roll, y_pitch, z_yaw);
-        // HM.show_matrix(E);
-        cout << E[0][0]*E[0][0] + E[1][0]*E[1][0] + E[2][0]*E[2][0] << endl;
+        // // 坐标转换测试
+        // E[0][0] = Hxdata[5]/256;
+        // E[1][0] = Hydata[5]/256;
+        // E[2][0] = Hzdata[5]/256;
+        // tranform(E, x_roll, y_pitch, z_yaw);
+        // // HM.show_matrix(E);
+        // cout << E[0][0]*E[0][0] + E[1][0]*E[1][0] + E[2][0]*E[2][0] << endl;
 
 		w.close();
 	}

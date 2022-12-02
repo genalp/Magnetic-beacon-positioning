@@ -265,8 +265,8 @@ int IIR_Filter::Direct( double Cotoff,
 void IIR_Filter::Filter(vector<double> &data) {
      struct DESIGN_SPECIFICATION IIR_Filter;
  
-     IIR_Filter.Cotoff   = (double)(PI/20);         //[red]
-     IIR_Filter.Stopband = (double)((PI*2)/20);   //[red]
+     IIR_Filter.Cotoff   = (double)(PI*4/25);         //[red]
+     IIR_Filter.Stopband = (double)((PI*8)/25);   //[red]
      IIR_Filter.Stopband_attenuation = 30;        //[dB]
 
      int N;
