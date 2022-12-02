@@ -26,7 +26,7 @@ public:
 	int send(string dat);
  
 	//接受数据或读数据，成功返回读取实际数据的长度，失败返回0
-	string receive();
+	string receive(int StrLen);
  
 private:
 	int pHandle[16];

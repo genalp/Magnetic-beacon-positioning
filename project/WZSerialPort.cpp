@@ -191,8 +191,8 @@ int WZSerialPort::send(string dat)
 	}
 }
 
-#define StrLen 23085// 11286// 33// 11286// 4422
-string WZSerialPort::receive()
+// #define StrLen 23085// 11286// 33// 11286// 4422
+string WZSerialPort::receive(int StrLen)
 {
 	HANDLE hCom = *(HANDLE*)pHandle;
 	string rec_str="";
@@ -218,7 +218,7 @@ string WZSerialPort::receive()
 	else
 	{
 		//异步方式
-		DWORD wCount = 1024; //成功读取的数据字节数
+		DWORD wCount = StrLen;//1024 //成功读取的数据字节数
 		DWORD dwErrorFlags; //错误标志
 		COMSTAT comStat; //通讯状态
 		OVERLAPPED m_osRead; //异步输入输出结构体
