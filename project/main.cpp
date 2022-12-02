@@ -3,19 +3,27 @@
 #include "kfft.h"
 #include "matrix.h"
 #include "transform.h"
+#include "sensor.h"
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <random>
 #include <ctime>
 #include <math.h>
+#include <windows.h>
 using namespace std;
 
 #define PhysicalTest    // 实物测试
 #define Simulation      // 仿真测试
 
 #define PI 3.1415926535
-#define Point_num 512
+#define Point_num 512   // 采样点数
+
+// 传感器操作命令
+#define JYRM3100_StartSend  "AT+PRATE=10\r\n"   // JYRM3100 开始以100Hz发送
+#define JYRM3100_StopSend   "AT+PRATE=0\r\n"    // JYRM3100 停止发送（单次发送）
+#define JY901_Unlock        {(char)0xff, (char)0xaa, (char)0x69, (char)0x88, (char)0xb5}    // JY901 串口操作解锁
+#define JY901_Sendonce      {(char)0xff, (char)0xaa, (char)0x03, (char)0x0c, (char)0x00}    // JY901 单次发送数据
 
 void Simulate(int Fs, int N, vector<double> &Hdata, vector<double> &Hidata) {
     default_random_engine r;
@@ -152,6 +160,8 @@ int main()
     ofstream fout;
     WZSerialPort w;
     IIR_Filter IIR;
+    sensor JYSensor;
+
 
 // 实物测试部分
 #ifdef PhysicalTest
@@ -159,42 +169,50 @@ int main()
     vector<double> Hidata(Point_num, 0);
     vector<double> fr(Point_num), fi(Point_num);
 	
-	if (w.open("COM7"))
+	if (w.open("COM6"))
 	{
-		// string str = "hello";
-		// w.send(str);
+        // 发送取值命令
+        // JYRM3100命令
+        // w.send(JYRM3100_StartSend);
+        // JY901命令
+        w.send(JY901_Unlock);
+        Sleep(50);
+        w.send(JY901_Sendonce);
+        
         // 取数据
-        OriginalData = w.receive();
+        // OriginalData = w.receive(23085);
+        OriginalData = w.receive(22);
 
         // 获取角度
         // GetAngle(OriginalData, x_roll, y_pitch, z_yaw);
-        // cout << x_roll << ", " << y_pitch << ", " << z_yaw << endl;
+        JYSensor.JY901_GetAngle(OriginalData, x_roll, y_pitch, z_yaw);
+        cout << x_roll << ", " << y_pitch << ", " << z_yaw << endl;
 
-        // 转换数据并存储
-        // DataTransfer(OriginalData, Hxdata, Hydata, Hzdata);
-        getH(OriginalData, Hxdata, Hydata, Hzdata);
-        fout.open("./Hdata.txt");
-        DataStorage(Hxdata, Hydata, Hzdata, fout);
-        fout.close();
+        // // 转换数据并存储
+        // JYSensor.JYRM3100_GetH(OriginalData, Hxdata, Hydata, Hzdata);
+        // // getH(OriginalData, Hxdata, Hydata, Hzdata);
+        // fout.open("./Hdata.txt");
+        // DataStorage(Hxdata, Hydata, Hzdata, fout);
+        // fout.close();
 
-        // 对磁场数据滤波并保存
-        IIR.Filter(Hxdata);
-        IIR.Filter(Hydata);
-        IIR.Filter(Hzdata);
-        fout.open("./Filterdata.txt");
-        DataStorage(Hxdata, Hydata, Hzdata, fout);
-        fout.close();
+        // // 对磁场数据滤波并保存
+        // IIR.Filter(Hxdata);
+        // IIR.Filter(Hydata);
+        // IIR.Filter(Hzdata);
+        // fout.open("./Filterdata.txt");
+        // DataStorage(Hxdata, Hydata, Hzdata, fout);
+        // fout.close();
 
-        // 对磁场傅里叶变换并存储
-        int ftt_n = (int)log2(Point_num);
-        kfft(Hxdata, Hidata, Point_num, ftt_n, fr, fi);
-        kfft(Hydata, Hidata, Point_num, ftt_n, fr, fi);
-        kfft(Hzdata, Hidata, Point_num, ftt_n, fr, fi);
-        fout.open("./FFTdata.txt");
-        DataStorage(Hxdata, Hydata, Hzdata, fout);
-        fout.close();
+        // // 对磁场傅里叶变换并存储
+        // int ftt_n = (int)log2(Point_num);
+        // kfft(Hxdata, Hidata, Point_num, ftt_n, fr, fi);
+        // kfft(Hydata, Hidata, Point_num, ftt_n, fr, fi);
+        // kfft(Hzdata, Hidata, Point_num, ftt_n, fr, fi);
+        // fout.open("./FFTdata.txt");
+        // DataStorage(Hxdata, Hydata, Hzdata, fout);
+        // fout.close();
 
-        cout << Hxdata[23] << ", " << Hydata[23] << ", " << Hzdata[23] << endl;
+        // cout << Hxdata[23] << ", " << Hydata[23] << ", " << Hzdata[23] << endl;
 
         // // 坐标转换测试
         // E[0][0] = Hxdata[5]/256;
