@@ -63,6 +63,86 @@ void DataStorage(vector<double> &Hxdata, vector<double> &Hydata, vector<double> 
 }
 
 
+void Sys_Init(WZSerialPort w) {
+    // 初始化JYRM3100
+    w.send(JYRM3100_StopSend);
+    Sleep(50);
+
+    // 初始化JY901
+    w.send(JY901_Unlock);
+    Sleep(50);
+    w.send(JY901_Sendonce);
+
+    // 接收垃圾信息
+    w.receive(200);
+}
+
+void Sys_GetH(WZSerialPort w, vector<double> &Hxdata, vector<double> &Hydata, vector<double> &Hzdata) {
+    
+    string OriginalData;
+    vector<double> Hidata(Point_num, 0);
+    vector<double> fr(Point_num), fi(Point_num);
+
+    ofstream fout;
+    IIR_Filter IIR;
+    sensor JYSensor;
+
+    // JYRM3100发送命令
+    w.send(JYRM3100_StartSend);
+    // 去除初始干扰信息
+    w.receive(100);
+    // 接收信息
+    OriginalData = w.receive(23085);
+    // 停止发送
+    w.send(JYRM3100_StopSend);
+    w.receive(50);
+
+    // 转换数据并存储
+    JYSensor.JYRM3100_GetH(OriginalData, Hxdata, Hydata, Hzdata);
+    fout.open("./Hdata.txt");
+    DataStorage(Hxdata, Hydata, Hzdata, fout);
+    fout.close();
+
+    // 对磁场数据滤波并保存
+    IIR.Filter(Hxdata);
+    IIR.Filter(Hydata);
+    IIR.Filter(Hzdata);
+    fout.open("./Filterdata.txt");
+    DataStorage(Hxdata, Hydata, Hzdata, fout);
+    fout.close();
+
+    // 对磁场傅里叶变换并存储
+    int ftt_n = (int)log2(Point_num);
+    kfft(Hxdata, Hidata, Point_num, ftt_n, fr, fi);
+    kfft(Hydata, Hidata, Point_num, ftt_n, fr, fi);
+    kfft(Hzdata, Hidata, Point_num, ftt_n, fr, fi);
+    fout.open("./FFTdata.txt");
+    DataStorage(Hxdata, Hydata, Hzdata, fout);
+    fout.close();
+
+    cout << Hxdata[23] << ", " << Hydata[23] << ", " << Hzdata[23] << endl;
+
+}
+
+void Sys_GetAngle(WZSerialPort w, double &x_roll, double &y_pitch, double &z_yaw) {
+    string OriginalData;
+    ofstream fout;
+    sensor JYSensor;
+
+    w.send(JY901_Unlock);
+    Sleep(50);
+    w.send(JY901_Sendonce);
+
+    // 获取数据
+    OriginalData = w.receive(22);
+
+    // 计算角度
+    JYSensor.JY901_GetAngle(OriginalData, x_roll, y_pitch, z_yaw);
+
+    cout << x_roll << ", " << y_pitch << ", " << z_yaw << endl;
+}
+
+
 int main()
 {
     string OriginalData;
@@ -88,24 +168,34 @@ int main()
     vector<double> Hidata(Point_num, 0);
     vector<double> fr(Point_num), fi(Point_num);
 	
-	if (w.open("COM6"))
+	if (w.open("COM7"))
 	{
+        // 系统初始化
+        Sys_Init(w);
+
+        // 获取角度
+        Sys_GetAngle(w, x_roll, y_pitch, z_yaw);
+
+        // 获取磁场数据并对数据进行处理
+        Sys_GetH(w, Hxdata, Hydata, Hzdata);
+
+        
+
         // 发送取值命令
         // JYRM3100命令
         // w.send(JYRM3100_StartSend);
         // JY901命令
-        w.send(JY901_Unlock);
-        Sleep(50);
-        w.send(JY901_Sendonce);
+        // w.send(JY901_Unlock);
+        // Sleep(50);
+        // w.send(JY901_Sendonce);
         
         // 取数据
         // OriginalData = w.receive(23085);
-        OriginalData = w.receive(22);
+        // OriginalData = w.receive(22);
 
         // 获取角度
-        // GetAngle(OriginalData, x_roll, y_pitch, z_yaw);
-        JYSensor.JY901_GetAngle(OriginalData, x_roll, y_pitch, z_yaw);
-        cout << x_roll << ", " << y_pitch << ", " << z_yaw << endl;
+        // JYSensor.JY901_GetAngle(OriginalData, x_roll, y_pitch, z_yaw);
+        // cout << x_roll << ", " << y_pitch << ", " << z_yaw << endl;
 
         // // 转换数据并存储
         // JYSensor.JYRM3100_GetH(OriginalData, Hxdata, Hydata, Hzdata);
@@ -132,13 +222,13 @@ int main()
 
         // cout << Hxdata[23] << ", " << Hydata[23] << ", " << Hzdata[23] << endl;
 
-        // // 坐标转换测试
-        // E[0][0] = Hxdata[5]/256;
-        // E[1][0] = Hydata[5]/256;
-        // E[2][0] = Hzdata[5]/256;
-        // tranform(E, x_roll, y_pitch, z_yaw);
-        // // HM.show_matrix(E);
-        // cout << E[0][0]*E[0][0] + E[1][0]*E[1][0] + E[2][0]*E[2][0] << endl;
+        // 坐标转换测试
+        E[0][0] = Hxdata[0]/256;
+        E[1][0] = Hydata[0]/256;
+        E[2][0] = Hzdata[0]/256;
+        tranform(E, x_roll, y_pitch, z_yaw);
+        HM.show_matrix(E);
+        cout << E[0][0]*E[0][0] + E[1][0]*E[1][0] + E[2][0]*E[2][0] << endl;
 
 		w.close();
 	}
