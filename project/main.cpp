@@ -129,8 +129,11 @@ void Sys_GetAngle(WZSerialPort w, double &x_roll, double &y_pitch, double &z_yaw
     ofstream fout;
     sensor JYSensor;
 
+    // 发送解锁命令
     w.send(JY901_Unlock);
+    // 延时，否则会接收失败
     Sleep(50);
+    // 发送取一次值
     w.send(JY901_Sendonce);
 
     // 获取数据
@@ -139,14 +142,12 @@ void Sys_GetAngle(WZSerialPort w, double &x_roll, double &y_pitch, double &z_yaw
     // 计算角度
     JYSensor.JY901_GetAngle(OriginalData, x_roll, y_pitch, z_yaw);
 
-    cout << x_roll << ", " << y_pitch << ", " << z_yaw << endl;
+    // cout << x_roll << ", " << y_pitch << ", " << z_yaw << endl;
 }
 
 
 int main()
 {
-    string OriginalData;
-
     vector<double> Hxdata(Point_num);
     vector<double> Hydata(Point_num);
     vector<double> Hzdata(Point_num);
@@ -156,10 +157,7 @@ int main()
     Matrix HM;
     vector<vector<double>> E = HM.creatmatrix(3,1);
 
-    ofstream fout;
     WZSerialPort w;
-    IIR_Filter IIR;
-    sensor JYSensor;
 
 
 // 实物测试部分
@@ -171,63 +169,20 @@ int main()
 	if (w.open("COM7"))
 	{
         // 系统初始化
-        Sys_Init(w);
+        // Sys_Init(w);
 
         // 获取角度
-        Sys_GetAngle(w, x_roll, y_pitch, z_yaw);
+        // Sys_GetAngle(w, x_roll, y_pitch, z_yaw);
 
         // 获取磁场数据并对数据进行处理
         Sys_GetH(w, Hxdata, Hydata, Hzdata);
 
-        
-
-        // 发送取值命令
-        // JYRM3100命令
-        // w.send(JYRM3100_StartSend);
-        // JY901命令
-        // w.send(JY901_Unlock);
-        // Sleep(50);
-        // w.send(JY901_Sendonce);
-        
-        // 取数据
-        // OriginalData = w.receive(23085);
-        // OriginalData = w.receive(22);
-
-        // 获取角度
-        // JYSensor.JY901_GetAngle(OriginalData, x_roll, y_pitch, z_yaw);
-        // cout << x_roll << ", " << y_pitch << ", " << z_yaw << endl;
-
-        // // 转换数据并存储
-        // JYSensor.JYRM3100_GetH(OriginalData, Hxdata, Hydata, Hzdata);
-        // fout.open("./Hdata.txt");
-        // DataStorage(Hxdata, Hydata, Hzdata, fout);
-        // fout.close();
-
-        // // 对磁场数据滤波并保存
-        // IIR.Filter(Hxdata);
-        // IIR.Filter(Hydata);
-        // IIR.Filter(Hzdata);
-        // fout.open("./Filterdata.txt");
-        // DataStorage(Hxdata, Hydata, Hzdata, fout);
-        // fout.close();
-
-        // // 对磁场傅里叶变换并存储
-        // int ftt_n = (int)log2(Point_num);
-        // kfft(Hxdata, Hidata, Point_num, ftt_n, fr, fi);
-        // kfft(Hydata, Hidata, Point_num, ftt_n, fr, fi);
-        // kfft(Hzdata, Hidata, Point_num, ftt_n, fr, fi);
-        // fout.open("./FFTdata.txt");
-        // DataStorage(Hxdata, Hydata, Hzdata, fout);
-        // fout.close();
-
-        // cout << Hxdata[23] << ", " << Hydata[23] << ", " << Hzdata[23] << endl;
-
         // 坐标转换测试
-        E[0][0] = Hxdata[0]/256;
-        E[1][0] = Hydata[0]/256;
-        E[2][0] = Hzdata[0]/256;
-        tranform(E, x_roll, y_pitch, z_yaw);
-        HM.show_matrix(E);
+        E[0][0] = Hxdata[23]/Point_num*2;
+        E[1][0] = Hydata[23]/Point_num*2;
+        E[2][0] = Hzdata[23]/Point_num*2;
+        // tranform(E, x_roll, y_pitch, z_yaw);
+        // HM.show_matrix(E);
         cout << E[0][0]*E[0][0] + E[1][0]*E[1][0] + E[2][0]*E[2][0] << endl;
 
 		w.close();
