@@ -1,0 +1,7 @@
+data3: 次数3
+data4: 次数6
+data5: 次数8
+data6: 次数2
+data7: 次数4
+data8: 经典
+data9: 经典+简单质心

@@ -1,32 +1,26 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
-# 极坐标参数
-r = 5       # 极径
-a = np.pi/8
-theta = np.linspace(0, a, 100)  # 极角范围，这里 a 表示夹角
-phi = np.linspace(0, np.pi/2, 100)  # 高度角范围，通常为0到π/2
+# 从文件中加载第二组数据
+sorted_data1 = np.loadtxt('sorted_data1.txt')
+cdf1 = np.loadtxt('cdf1.txt')
 
-# 创建网格
-R, Theta, Phi = np.meshgrid(r, theta, phi)
+# 从文件中加载第一组数据
+sorted_data2 = np.loadtxt('sorted_data9.txt')
+cdf2 = np.loadtxt('cdf9.txt')
 
-# 将极坐标转换为直角坐标
-X = R * np.sin(Phi) * np.cos(Theta)
-Y = R * np.sin(Phi) * np.sin(Theta)
-Z = R * np.cos(Phi)
+# 从文件中加载第二组数据
+sorted_data3 = np.loadtxt('sorted_data8.txt')
+cdf3 = np.loadtxt('cdf8.txt')
 
-# 创建一个三维图形对象
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
+# 绘制CDF函数图，使用不同的颜色区分两组数据
+plt.plot(sorted_data1, cdf1, marker='.', linestyle='solid', label='Data 1', color='green')
+plt.plot(sorted_data2, cdf2, marker='.', linestyle='solid', label='Data 2', color='blue')
+plt.plot(sorted_data3, cdf3, marker='.', linestyle='solid', label='Data 3', color='red')
 
-# 绘制弧面
-ax.plot_surface(X, Y, Z, color='b', alpha=0.7)
-
-# 设置坐标轴标签
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_zlabel('Z')
-
-# 显示图形
+plt.xlabel("Data Values")
+plt.ylabel("CDF")
+plt.title("Cumulative Distribution Function (CDF)")
+plt.grid(True)
+plt.legend()
 plt.show()

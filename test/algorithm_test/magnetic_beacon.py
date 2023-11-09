@@ -22,6 +22,7 @@ class magnetic_beacon:
         self.beacon_number = 0                  # 磁信标数量
         self.beacon_position = []               # 磁信标位置(理想值)
         self.beacon_position_noise = []         # 磁信标位置(噪声值)
+        self.beacon_angle_noise = []            # 磁信标角度噪声
         self.beacon_frequency = []              # 磁信标发射频率
         self.per_beacon_signal_ideal = []       # 各个磁信标接收信号(理想值)
         self.sum_signal_ideal = []              # 合信号(理想值)
@@ -55,6 +56,20 @@ class magnetic_beacon:
         self.beacon_position.append(position)
         self.beacon_frequency.append(frequency)
         self.beacon_number += 1
+        # 判断是否引入信标误差
+        if self.if_add_beacon_error == True:
+            # 引入信标偏心误差
+            for position in self.beacon_position:
+                beacon_x = position[0] + random.uniform(-1.0*self.beacon_error_xy, 1.0*self.beacon_error_xy)
+                beacon_y = position[1] + random.uniform(-1.0*self.beacon_error_xy, 1.0*self.beacon_error_xy)
+                beacon_z = position[2] + random.uniform(-1.0*self.beacon_error_z, 1.0*self.beacon_error_z)
+                self.beacon_position_noise.append([beacon_x, beacon_y, beacon_z])
+        # 添加角度误差
+        alpha = random.uniform(-1.0*self.max_angle_error, 1.0*self.max_angle_error)
+        beta = random.uniform(-1.0*self.max_angle_error, 1.0*self.max_angle_error)
+        gamma = random.uniform(-180.0,180.0)
+        self.beacon_angle_noise.append([alpha, beta, gamma])
+
 
     # 获取信标坐标信息
     def get_beacon_position(self):
@@ -87,7 +102,7 @@ class magnetic_beacon:
         return new_point
     
     # 获取理论磁场振幅
-    def get_amplitude(self, K, p0, p1):
+    def get_amplitude(self, K, p0, p1, angle_noise):
         x0, y0, z0 = p0
         x1, y1, z1 = p1
         x = x0 - x1
@@ -96,10 +111,11 @@ class magnetic_beacon:
 
         # 添加角度误差
         if self.if_add_angle_error == True:
-            alpha = random.uniform(-1.0*self.max_angle_error, 1.0*self.max_angle_error)
-            beta = random.uniform(-1.0*self.max_angle_error, 1.0*self.max_angle_error)
-            gamma = random.uniform(-180.0,180.0)
-            [x, y, z] = self.get_point_in_new_coordinate_system(x, y, z, np.deg2rad(alpha), np.deg2rad(beta), np.deg2rad(gamma))
+            # alpha = random.uniform(-1.0*self.max_angle_error, 1.0*self.max_angle_error)
+            # beta = random.uniform(-1.0*self.max_angle_error, 1.0*self.max_angle_error)
+            # gamma = random.uniform(-180.0,180.0)
+            # print(alpha, beta, gamma)
+            [x, y, z] = self.get_point_in_new_coordinate_system(x, y, z, np.deg2rad(angle_noise[0]), np.deg2rad(angle_noise[1]), np.deg2rad(angle_noise[2]))
 
         r = np.sqrt(x*x + y*y + z*z)
         return K * np.sqrt(3*z*z + r*r) / (r*r*r*r)
@@ -137,24 +153,24 @@ class magnetic_beacon:
         self.sum_signal_ideal.clear()
         self.sum_signal_noise.clear()
         self.signal_output.clear()
-        self.beacon_position_noise.clear()
+        # self.beacon_position_noise.clear()
         sensor_position_input = []  # 实际输入的坐标值
 
         # 判断是否引入信标误差
         if self.if_add_beacon_error == True:
-            # 引入信标偏心误差
-            for position in self.beacon_position:
-                beacon_x = position[0] + random.uniform(-1.0*self.beacon_error_xy, 1.0*self.beacon_error_xy)
-                beacon_y = position[1] + random.uniform(-1.0*self.beacon_error_xy, 1.0*self.beacon_error_xy)
-                beacon_z = position[2] + random.uniform(-1.0*self.beacon_error_z, 1.0*self.beacon_error_z)
-                self.beacon_position_noise.append([beacon_x, beacon_y, beacon_z])
+            # # 引入信标偏心误差
+            # for position in self.beacon_position:
+            #     beacon_x = position[0] + random.uniform(-1.0*self.beacon_error_xy, 1.0*self.beacon_error_xy)
+            #     beacon_y = position[1] + random.uniform(-1.0*self.beacon_error_xy, 1.0*self.beacon_error_xy)
+            #     beacon_z = position[2] + random.uniform(-1.0*self.beacon_error_z, 1.0*self.beacon_error_z)
+            #     self.beacon_position_noise.append([beacon_x, beacon_y, beacon_z])
             sensor_position_input = self.beacon_position_noise
         else:
             sensor_position_input = self.beacon_position
 
         # 逐个计算磁场信号
         for i in range(self.beacon_number):
-            amplitude = self.get_amplitude(self.M, self.sensor_position, sensor_position_input[i])
+            amplitude = self.get_amplitude(self.M, self.sensor_position, sensor_position_input[i], self.beacon_angle_noise[i])
             ideal_signal = self.get_per_beacon_signal(amplitude, self.beacon_frequency[i])
             self.per_beacon_signal_ideal.append(ideal_signal)
 
@@ -167,6 +183,12 @@ class magnetic_beacon:
             self.signal_output = self.sum_signal_noise
         else:
             self.signal_output = self.sum_signal_ideal
+
+
+    # 更新传感器位置
+    def update_sensor(self, sensor_position):
+        self.sensor_position = sensor_position
+
     
     # 画图
     def draw_signal(self):
