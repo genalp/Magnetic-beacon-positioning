@@ -1,5 +1,7 @@
-import random
+from tqdm import tqdm
+import time
 
-a = random.uniform(-1.0*0.5, 1.0*0.5)
-
-print(a)
+# 示例循环
+for i in tqdm(range(20), desc="Processing", unit="iteration"):
+    # 模拟耗时的任务
+    time.sleep(0.1)

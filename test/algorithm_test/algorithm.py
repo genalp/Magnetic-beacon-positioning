@@ -6,7 +6,6 @@ from sko.PSO import PSO
 from sko.SA import SA
 import pandas as pd
 from scipy.stats import gaussian_kde
-import threading
 
 beacons = [
     [[0, 0, 0], 3]
@@ -14,20 +13,22 @@ beacons = [
     ,[[2, 0, 0], 5]
     ,[[0, 1, 1], 6]
     ,[[0, 2, 0], 8]
-    ,[[2, 2, 2], 10]
+    ,[[3, 3, 2], 10]
+    # ,[[2, 3, 2], 12]
 ]
 
 B = []
-sensor_position = [3,7,1]
+sensor_position = [8, 8, 20]
 beacon_list = []
 m = magnetic_beacon()
 data = []
 
 # 1: 经典算法
 # 2: 简单质心
-# 3: 加权质心
-algorithm_num = 1
-save_path = ['sorted_data8.txt', 'cdf8.txt']
+# 3: 加权质心(磁感应强度相关)
+# 4: 加权质心2
+algorithm_num = 2
+save_path = ['sorted_data15.txt', 'cdf15.txt']
 
 # 初始化信标
 def init_beacons():
@@ -36,8 +37,11 @@ def init_beacons():
         sensor_position = sensor_position, 
         if_add_noise=True,
         if_add_angle_error=True,
-        max_angle_error=0.3,
-        if_add_beacon_error=False
+        max_angle_error=1,
+        if_add_beacon_error=True,
+        beacon_error_xy=0.01,
+        beacon_error_z=0.01,
+        M=300000
         )
     for beacon in beacons:
         m.add_beacon(beacon[0], beacon[1])
@@ -91,12 +95,12 @@ def obj_fun(p):
 
     # 优化模型
     for i in beacon_list:
-        # fi = np.log(B[i]) - np.log(K) - \
-        #     0.5 * np.log(3*(beacons[i][0][2]-z)**2 + (beacons[i][0][0]-x)**2 + (beacons[i][0][1]-y)**2 + (beacons[i][0][2]-z)**2) + \
-        #     2 * np.log((beacons[i][0][0]-x)**2 + (beacons[i][0][1]-y)**2 + (beacons[i][0][2]-z)**2)
+        fi = np.log(B[i]) - np.log(K) - \
+            0.5 * np.log(3*(beacons[i][0][2]-z)**2 + (beacons[i][0][0]-x)**2 + (beacons[i][0][1]-y)**2 + (beacons[i][0][2]-z)**2) + \
+            2 * np.log((beacons[i][0][0]-x)**2 + (beacons[i][0][1]-y)**2 + (beacons[i][0][2]-z)**2)
         
-        fi = K * np.sqrt(3*(beacons[i][0][2]-z)**2 + (beacons[i][0][0]-x)**2 + (beacons[i][0][1]-y)**2 + (beacons[i][0][2]-z)**2) - \
-            B[i] * ((beacons[i][0][0]-x)**2 + (beacons[i][0][1]-y)**2 + (beacons[i][0][2]-z)**2)**2
+        # fi = K * np.sqrt(3*(beacons[i][0][2]-z)**2 + (beacons[i][0][0]-x)**2 + (beacons[i][0][1]-y)**2 + (beacons[i][0][2]-z)**2) - \
+        #     B[i] * ((beacons[i][0][0]-x)**2 + (beacons[i][0][1]-y)**2 + (beacons[i][0][2]-z)**2)**2
 
         fn.append(fi)
     
@@ -136,8 +140,8 @@ def calculate_weights(n = 1):
     global B, beacon_list
     b = 0
     for i in beacon_list:
-        b += B[i]
-    b = np.power(b, n)
+        b += np.power(B[i], n)
+    # b = np.power(b, n)
     return b
 
 # 加权质心
@@ -163,9 +167,9 @@ def test():
     data = []
     position = []
 
-    for x in range(1,9):
-        for y in range(1,9):
-            for z in range(3,5):
+    for x in np.arange(2,20,2):
+        for y in np.arange(2,20,2):
+            for z in np.arange(2,6,2):
                 # 数值初始化
                 n = 0
                 B.clear()
@@ -202,9 +206,14 @@ def test():
                         beacon_list.remove(i)
                         position = SA_position()
                         every_position.append(position)
-                        weights.append(calculate_weights(4))
+                        weights.append(calculate_weights(6))
                     print(np.array(every_position))
                     position = weighted_centroid(every_position, weights)
+                elif algorithm_num == 4:
+                    beacon_list.clear()
+                    beacon_list = list(range(len(beacons)))
+                    beacon_list.remove(len(beacons)-1)
+                    position = SA_position()
 
                 print(position)
                 for i in range(3):
@@ -273,4 +282,8 @@ def test():
     # plt.show()
 
 init_beacons()
-test()
+# test()
+for i in range(1,5):
+    algorithm_num = i
+    save_path = [f'sorted_data{18+i}.txt', f'cdf{18+i}.txt']
+    test()

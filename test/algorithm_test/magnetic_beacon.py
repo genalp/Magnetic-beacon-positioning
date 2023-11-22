@@ -59,11 +59,10 @@ class magnetic_beacon:
         # 判断是否引入信标误差
         if self.if_add_beacon_error == True:
             # 引入信标偏心误差
-            for position in self.beacon_position:
-                beacon_x = position[0] + random.uniform(-1.0*self.beacon_error_xy, 1.0*self.beacon_error_xy)
-                beacon_y = position[1] + random.uniform(-1.0*self.beacon_error_xy, 1.0*self.beacon_error_xy)
-                beacon_z = position[2] + random.uniform(-1.0*self.beacon_error_z, 1.0*self.beacon_error_z)
-                self.beacon_position_noise.append([beacon_x, beacon_y, beacon_z])
+            beacon_x = position[0] + random.uniform(-1.0*self.beacon_error_xy, 1.0*self.beacon_error_xy)
+            beacon_y = position[1] + random.uniform(-1.0*self.beacon_error_xy, 1.0*self.beacon_error_xy)
+            beacon_z = position[2] + random.uniform(-1.0*self.beacon_error_z, 1.0*self.beacon_error_z)
+            self.beacon_position_noise.append([beacon_x, beacon_y, beacon_z])
         # 添加角度误差
         alpha = random.uniform(-1.0*self.max_angle_error, 1.0*self.max_angle_error)
         beta = random.uniform(-1.0*self.max_angle_error, 1.0*self.max_angle_error)
