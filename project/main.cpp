@@ -17,7 +17,7 @@ using namespace std;
 #define Simulation      // 仿真测试
 
 #define PI 3.1415926535
-#define Point_num 512   // 采样点数
+#define Point_num 698   // 采样点数
 
 // 传感器操作命令
 #define JYRM3100_StartSend  "AT+PRATE=10\r\n"   // JYRM3100 开始以100Hz发送
@@ -92,7 +92,9 @@ void Sys_GetH(WZSerialPort w, vector<double> &Hxdata, vector<double> &Hydata, ve
     // 去除初始干扰信息
     w.receive(100);
     // 接收信息
-    OriginalData = w.receive(23085);
+    cout << "Start receive..." << endl;
+    OriginalData = w.receive(31500);
+    cout << "Stop receive..." << endl;
     // 停止发送
     w.send(JYRM3100_StopSend);
     w.receive(50);
@@ -166,7 +168,7 @@ int main()
     vector<double> Hidata(Point_num, 0);
     vector<double> fr(Point_num), fi(Point_num);
 	
-	if (w.open("COM7"))
+	if (w.open("COM6"))
 	{
         // 系统初始化
         // Sys_Init(w);

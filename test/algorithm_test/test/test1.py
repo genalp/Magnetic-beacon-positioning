@@ -50,7 +50,7 @@ import matplotlib.pyplot as plt
 # 设置中文字体
 # plt.rcParams['font.sans-serif'] = ['SimHei']
 
-datanum = 17
+datanum = 18
 
 # 从文件中加载第一组数据
 sorted_data1 = np.loadtxt(f'data{datanum}-3.txt')
@@ -67,10 +67,16 @@ sorted_data3 = np.loadtxt(f'data{datanum}-6.txt')
 cdf3 = np.arange(1, len(sorted_data3) + 1) / len(sorted_data3)
 print("GA: ", np.mean(sorted_data3))
 
+# 从文件中加载第四组数据
+sorted_data4 = np.loadtxt(f'data{datanum}-7.txt')
+cdf4 = np.arange(1, len(sorted_data3) + 1) / len(sorted_data3)
+print("GWO: ", np.mean(sorted_data3))
+
 # 绘制CDF函数图，使用不同的颜色区分两组数据
 plt.plot(sorted_data1, cdf1, linewidth=2, linestyle='solid', label='SA', color='red')
 plt.plot(sorted_data2, cdf2, linewidth=2, linestyle='dashed', label='PSO', color='blue')
 plt.plot(sorted_data3, cdf3, linewidth=2, linestyle='dotted', label='GA', color='green')
+plt.plot(sorted_data4, cdf4, linewidth=2, linestyle='dotted', label='GWO', color='orange')
 
 # 设置 x 和 y 坐标轴的刻度
 # plt.xticks(np.arange(0, 12, 1))
