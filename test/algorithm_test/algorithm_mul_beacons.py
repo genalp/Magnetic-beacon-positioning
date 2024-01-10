@@ -270,6 +270,77 @@ def GA_position():
     best_params, residuals = ga.run()
     return best_params
 
+def gwo(obj_fun, lower_bounds, upper_bounds, n_agents, max_iter):
+    # 初始化狼群
+    alpha_pos = np.zeros(len(lower_bounds))
+    alpha_score = float("inf")
+
+    beta_pos = np.zeros(len(lower_bounds))
+    beta_score = float("inf")
+
+    delta_pos = np.zeros(len(lower_bounds))
+    delta_score = float("inf")
+
+    # 初始化狼群位置
+    positions = np.random.uniform(low=lower_bounds, high=upper_bounds, size=(n_agents, len(lower_bounds)))
+
+    # 主循环
+    for t in range(max_iter):
+        for i in range(n_agents):
+            # 评估当前位置
+            fitness = obj_fun(positions[i])
+
+            # 更新Alpha, Beta, Delta
+            if fitness < alpha_score:
+                alpha_score = fitness
+                alpha_pos = positions[i].copy()
+            elif fitness < beta_score:
+                beta_score = fitness
+                beta_pos = positions[i].copy()
+            elif fitness < delta_score:
+                delta_score = fitness
+                delta_pos = positions[i].copy()
+
+        # 更新位置
+        a = 2 - t * (2 / max_iter)  # a逐渐减小
+
+        for i in range(n_agents):
+            for j in range(len(lower_bounds)):
+                r1, r2 = np.random.rand(2)  # 随机数
+                A1 = 2 * a * r1 - a  # 计算系数A
+                C1 = 2 * r2  # 计算系数C
+
+                # Alpha狼影响
+                D_alpha = abs(C1 * alpha_pos[j] - positions[i][j])
+                X1 = alpha_pos[j] - A1 * D_alpha
+
+                # Beta狼影响
+                r1, r2 = np.random.rand(2)
+                A2 = 2 * a * r1 - a
+                C2 = 2 * r2
+                D_beta = abs(C2 * beta_pos[j] - positions[i][j])
+                X2 = beta_pos[j] - A2 * D_beta
+
+                # Delta狼影响
+                r1, r2 = np.random.rand(2)
+                A3 = 2 * a * r1 - a
+                C3 = 2 * r2
+                D_delta = abs(C3 * delta_pos[j] - positions[i][j])
+                X3 = delta_pos[j] - A3 * D_delta
+
+                positions[i][j] = (X1 + X2 + X3) / 3
+
+    return alpha_pos, alpha_score
+
+def GWO_position():
+    # 使用函数
+    n_agents = 5
+    max_iter = 100
+    lower_bounds = [0, 0, 0]
+    upper_bounds = [40, 40, 30]
+    best_position, best_score = gwo(obj_fun, lower_bounds, upper_bounds, n_agents, max_iter)
+    return best_position
+
 # init_beacons()
 # filtered_signal = beacon_IIR()
 # beacon_FFT(filtered_signal)
@@ -462,6 +533,22 @@ def test():
             # weights.pop(num)
             # print(np.array(every_position))
             position = weighted_centroid(every_position, weights)
+        elif algorithm_num == 7:
+            every_position = []
+            weights = []
+            for i in range(use_beacon_num+1):
+                beacon_list.clear()
+                beacon_list = find_top_n_indices(B, use_beacon_num+1)
+                beacon_list.pop(i)
+                position = GWO_position()
+                every_position.append(position)
+                weights.append(calculate_weights(6))
+            # print(np.array(every_position),'\n')
+            # num = find_most_deviant_point_index(every_position)
+            # every_position.pop(num)
+            # weights.pop(num)
+            # print(np.array(every_position))
+            position = weighted_centroid(every_position, weights)
 
         # print('postion: ',position,'\nsensor:  ', sensor_position)
         for i in range(3):
@@ -509,12 +596,12 @@ def test():
 #     test()
 
 # beacons_num = use_beacon_num + 1
-for i in range(17,22):
+for i in range(18,19):
     init_sys()
     # draw_sys()
     np.savetxt('sensor.txt',sensors)
     init_beacons()
-    for j in [3, 5, 6]:
+    for j in [3, 5, 6, 7]:
         algorithm_num = j
         save_path = f'data{i}-{j}.txt'
         test()
